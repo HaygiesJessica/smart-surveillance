@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Detection History | Sentinel</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <div class="app">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+
+            <div class="logo">
+
+                <div class="logo-icon">
+                    ◉
+                </div>
+
+                <div>
+                    <h2>Sentinel</h2>
+                    <span>Smart Surveillance</span>
+                </div>
+
+            </div>
+
+
+            <nav>
+
+                <a href="/" class="nav-item">
+                    <span>▦</span>
+                    Dashboard
+                </a>
+
+
+                <a href="/history" class="nav-item active">
+                    <span>◷</span>
+                    Detection History
+                </a>
+
+
+                <a href="#" class="nav-item">
+                    <span>⚙</span>
+                    Settings
+                </a>
+
+            </nav>
+
+
+            <div class="sidebar-footer">
+
+                <div class="connection-dot"></div>
+
+                Raspberry Pi Connected
+
+            </div>
+
+        </aside>
+
+
+        <!-- MAIN CONTENT -->
+
+        <main class="main">
+
+            <header class="topbar">
+
+                <div>
+                    <h1>Detection History</h1>
+
+                    <p>
+                        Record of all detected motion events
+                    </p>
+                </div>
+
+            </header>
+
+
+            <section class="panel history-panel">
+
+                <div class="panel-header">
+
+                    <div>
+                        <h2>Motion Events</h2>
+
+                        <span>
+                            All recorded detections
+                        </span>
+                    </div>
+
+                </div>
+
+
+                <div class="history-container">
+
+                    <table class="history-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>ID</th>
+                                <th>Captured Image</th>
+                                <th>Detection Date and Time</th>
+                                <th>Status</th>
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="history-body">
+
+                            <tr>
+                                <td colspan="4">
+                                    Loading detection history...
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+<!-- IMAGE PREVIEW MODAL -->
+
+<div
+    id="image-modal"
+    class="image-modal"
+    onclick="closeImagePreview()">
+
+    <div
+        class="modal-content"
+        onclick="event.stopPropagation()">
+
+        <button
+            class="modal-close"
+            onclick="closeImagePreview()">
+
+            ×
+
+        </button>
+
+        <img
+            id="modal-image"
+            alt="Detection Preview">
+
+    </div>
+
+</div>
+
+    <script src="{{ url_for('static', filename='js/history.js') }}"></script>
+
+</body>
+
+</html>

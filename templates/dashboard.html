@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Smart Surveillance</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <div class="app">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+
+            <div class="logo">
+                <div class="logo-icon">◉</div>
+
+                <div>
+                    <h2>Smart Home Surveillance</h2>
+                    <span>Group 2</span>
+                </div>
+            </div>
+
+            <nav>
+
+                <a href="/" class="nav-item active">
+                    <span>▦</span>
+                    Dashboard
+                </a>
+
+                <a href="/history" class="nav-item">
+                    <span>◷</span>
+                    Detection History
+                </a>
+
+                <a href="#" class="nav-item">
+                    <span>⚙</span>
+                    Settings
+                </a>
+
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="connection-dot"></div>
+                Raspberry Pi Connected
+            </div>
+
+        </aside>
+
+
+        <!-- MAIN CONTENT -->
+        <main class="main">
+
+            <!-- HEADER -->
+            <header class="topbar">
+
+                <div>
+                    <h1>Dashboard</h1>
+                    <p>Real-time surveillance monitoring</p>
+                </div>
+
+                <div class="system-status">
+                    <span class="status-dot"></span>
+                    SYSTEM ONLINE
+                </div>
+
+            </header>
+
+
+            <!-- STATUS CARDS -->
+            <section class="stats">
+
+                <div class="stat-card">
+
+                    <div class="stat-info">
+                        <span class="stat-label">System Status</span>
+                        <strong id="system-status">Monitoring</strong>
+                    </div>
+
+                    <div class="stat-icon green">
+                        ●
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-info">
+                        <span class="stat-label">Motion Detected</span>
+                        <strong id="motion-count">0</strong>
+                    </div>
+
+                    <div class="stat-icon blue">
+                        ◉
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-info">
+                        <span class="stat-label">Last Detection</span>
+                        <strong id="last-detection">No detection yet</strong>
+                    </div>
+
+                    <div class="stat-icon orange">
+                        ◷
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-info">
+                        <span class="stat-label">Alarm</span>
+                        <strong id="alarm-status">Inactive</strong>
+                    </div>
+
+                    <div class="stat-icon red">
+                        !
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- CAMERA + SENSOR -->
+            <section class="monitor-grid">
+
+                <!-- CAMERA -->
+                <div class="panel camera-panel">
+
+                    <div class="panel-header">
+
+                        <div>
+                            <h2>Live Monitoring</h2>
+                            <span>Camera 01</span>
+                        </div>
+
+                        <div class="live-indicator">
+                            <span></span>
+                            LIVE
+                        </div>
+
+                    </div>
+
+
+                    <div class="camera-view">
+                        <div
+                            class="camera-placeholder"
+                            id="camera-placeholder">
+
+                            <div class="camera-icon">
+                                ◉
+                            </div>
+
+                            <h3>Camera Feed</h3>
+
+                            <p>
+                                Waiting for a detection...
+                            </p>
+
+                        </div>
+
+                        <img
+                            id="latest-image"
+                            class="latest-image"
+                            style="display: none;"
+                            alt="Latest surveillance capture">
+
+                    </div>
+
+
+                <!-- SENSOR STATUS -->
+                <div class="panel">
+
+                    <div class="panel-header">
+
+                        <div>
+                            <h2>Sensor Status</h2>
+                            <span>Hardware monitoring</span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="sensor-list">
+
+                        <div class="sensor">
+
+                            <div class="sensor-name">
+                                <span class="sensor-indicator green"></span>
+
+                                <div>
+                                    <strong>PIR Motion Sensor</strong>
+                                    <small>GPIO Input</small>
+                                </div>
+                            </div>
+
+                            <span class="sensor-status">
+                                CLEAR
+                            </span>
+
+                        </div>
+
+
+                        <div class="sensor">
+
+                            <div class="sensor-name">
+                                <span class="sensor-indicator gray"></span>
+
+                                <div>
+                                    <strong>Buzzer</strong>
+                                    <small>GPIO Output</small>
+                                </div>
+                            </div>
+
+                            <span class="sensor-status off">
+                                OFF
+                            </span>
+
+                        </div>
+
+
+                        <div class="sensor">
+
+                            <div class="sensor-name">
+                                <span class="sensor-indicator gray"></span>
+
+                                <div>
+                                    <strong>Warning LED</strong>
+                                    <small>GPIO Output</small>
+                                </div>
+                            </div>
+
+                            <span class="sensor-status off">
+                                OFF
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- LATEST DETECTION -->
+            <section class="panel detection-panel">
+
+                <div class="panel-header">
+
+                    <div>
+                        <h2>Latest Detection</h2>
+                        <span>Most recent motion event</span>
+                    </div>
+
+                    <button
+                        class="simulate-button"
+                        onclick="simulateMotion()">
+
+                        Simulate Motion
+
+                    </button>
+
+                </div>
+
+
+                <div class="empty-detection" id="latest-detection-panel">
+
+                    <div class="empty-icon">
+                        ✓
+                    </div>
+
+                    <h3 id="latest-detection-title">System Ready</h3>
+
+                    <p id="latest-detection-text">
+                        Click "Simulate Motion" to test the surveillance system.
+                    </p>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+        <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+</body>
+
+</html>
