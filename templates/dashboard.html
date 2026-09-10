@@ -5,49 +5,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Smart Surveillance</title>
+    <title>Dashboard | Smart Home Surveillance</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
-<body>
+<body class="dashboard-page">
 
     <div class="app">
 
         <!-- SIDEBAR -->
         <aside class="sidebar">
 
-            <div class="logo">
-                <div class="logo-icon">◉</div>
+            <div class="brand">
+                <div class="brand-mark">&#9673;</div>
 
-                <div>
-                    <h2>Smart Home Surveillance</h2>
-                    <span>Group 2</span>
+                <div class="brand-text">
+                    <span class="brand-line">SMART HOME</span>
+                    <span class="brand-line brand-line-accent">SURVEILLANCE</span>
                 </div>
             </div>
 
-            <nav>
-
-                <a href="/" class="nav-item active">
-                    <span>▦</span>
-                    Dashboard
-                </a>
-
-                <a href="/history" class="nav-item">
-                    <span>◷</span>
-                    Detection History
-                </a>
-
-                <a href="#" class="nav-item">
-                    <span>⚙</span>
-                    Settings
-                </a>
-
+            <nav class="nav">
+                <a href="/" class="nav-link active">Dashboard</a>
+                <a href="/history" class="nav-link">Event History</a>
             </nav>
 
             <div class="sidebar-footer">
-                <div class="connection-dot"></div>
-                Raspberry Pi Connected
+                <span class="mode-dot" aria-hidden="true"></span>
+
+                <div>
+                    <strong>SIMULATION MODE</strong>
+                    <small>No Hardware Connected</small>
+                </div>
             </div>
 
         </aside>
@@ -57,236 +47,153 @@
         <main class="main">
 
             <!-- HEADER -->
-            <header class="topbar">
+            <header class="page-header">
 
                 <div>
                     <h1>Dashboard</h1>
-                    <p>Real-time surveillance monitoring</p>
+                    <p>Smart Home Surveillance System</p>
                 </div>
 
-                <div class="system-status">
-                    <span class="status-dot"></span>
-                    SYSTEM ONLINE
-                </div>
+                <button
+                    class="btn btn-primary"
+                    id="simulate-btn"
+                    onclick="simulateMotion()">
+                    Simulate Motion
+                </button>
 
             </header>
 
 
-            <!-- STATUS CARDS -->
-            <section class="stats">
+            <!-- SYSTEM STATUS -->
+            <section class="status-hero state-monitoring" id="status-hero" aria-live="polite">
 
-                <div class="stat-card">
+                <span class="status-hero-label">System Status</span>
 
-                    <div class="stat-info">
-                        <span class="stat-label">System Status</span>
-                        <strong id="system-status">Monitoring</strong>
-                    </div>
-
-                    <div class="stat-icon green">
-                        ●
-                    </div>
-
+                <div class="status-hero-value">
+                    <span class="status-dot success" id="status-hero-dot" aria-hidden="true"></span>
+                    <span id="status-hero-text">MONITORING</span>
                 </div>
 
+                <p class="status-hero-hint" id="status-hero-hint">
+                    All sensors normal. Waiting for motion.
+                </p>
 
-                <div class="stat-card">
+            </section>
 
-                    <div class="stat-info">
-                        <span class="stat-label">Motion Detected</span>
-                        <strong id="motion-count">0</strong>
+
+            <!-- DEVICE STATUS CARDS -->
+            <section class="device-grid">
+
+                <div class="device-card">
+                    <span class="device-name">PIR Sensor</span>
+                    <div class="device-value">
+                        <span class="status-dot success" id="pir-dot" aria-hidden="true"></span>
+                        <span id="pir-text">NO MOTION</span>
                     </div>
-
-                    <div class="stat-icon blue">
-                        ◉
-                    </div>
-
                 </div>
 
-
-                <div class="stat-card">
-
-                    <div class="stat-info">
-                        <span class="stat-label">Last Detection</span>
-                        <strong id="last-detection">No detection yet</strong>
+                <div class="device-card">
+                    <span class="device-name">Camera</span>
+                    <div class="device-value">
+                        <span class="status-dot success" id="camera-dot" aria-hidden="true"></span>
+                        <span id="camera-text">READY</span>
                     </div>
-
-                    <div class="stat-icon orange">
-                        ◷
-                    </div>
-
                 </div>
 
-
-                <div class="stat-card">
-
-                    <div class="stat-info">
-                        <span class="stat-label">Alarm</span>
-                        <strong id="alarm-status">Inactive</strong>
+                <div class="device-card">
+                    <span class="device-name">LED Alarm</span>
+                    <div class="device-value">
+                        <span class="status-dot neutral" id="led-dot" aria-hidden="true"></span>
+                        <span id="led-text">OFF</span>
                     </div>
+                </div>
 
-                    <div class="stat-icon red">
-                        !
+                <div class="device-card">
+                    <span class="device-name">Buzzer</span>
+                    <div class="device-value">
+                        <span class="status-dot neutral" id="buzzer-dot" aria-hidden="true"></span>
+                        <span id="buzzer-text">OFF</span>
                     </div>
-
                 </div>
 
             </section>
 
 
-            <!-- CAMERA + SENSOR -->
-            <section class="monitor-grid">
+            <!-- LATEST CAPTURE: left = event info + statistics, right = large camera -->
+            <section class="panel capture-panel">
 
-                <!-- CAMERA -->
-                <div class="panel camera-panel">
+                <div class="capture-columns">
 
-                    <div class="panel-header">
+                    <!-- LEFT (top): event details -->
+                    <div class="capture-details">
 
-                        <div>
-                            <h2>Live Monitoring</h2>
-                            <span>Camera 01</span>
+                        <div class="capture-heading">
+                            <h2>Latest Capture</h2>
+                            <span>Most recent surveillance image</span>
                         </div>
 
-                        <div class="live-indicator">
-                            <span></span>
-                            LIVE
-                        </div>
+                        <div class="capture-info" id="capture-info" hidden>
 
-                    </div>
+                            <span class="event-id" id="capture-event-id">Event #000</span>
+                            <span class="capture-time" id="capture-time"></span>
 
-
-                    <div class="camera-view">
-                        <div
-                            class="camera-placeholder"
-                            id="camera-placeholder">
-
-                            <div class="camera-icon">
-                                ◉
+                            <div class="capture-badges">
+                                <span class="badge badge-motion">Motion Detected</span>
+                                <span class="badge badge-alarm" id="capture-alarm-badge">Activated</span>
                             </div>
 
-                            <h3>Camera Feed</h3>
+                            <button
+                                type="button"
+                                class="btn btn-secondary capture-view-btn"
+                                id="view-image-btn"
+                                onclick="openImagePreview()">
+                                View Image
+                            </button>
 
-                            <p>
-                                Waiting for a detection...
-                            </p>
-
-                        </div>
-
-                        <img
-                            id="latest-image"
-                            class="latest-image"
-                            style="display: none;"
-                            alt="Latest surveillance capture">
-
-                    </div>
-
-
-                <!-- SENSOR STATUS -->
-                <div class="panel">
-
-                    <div class="panel-header">
-
-                        <div>
-                            <h2>Sensor Status</h2>
-                            <span>Hardware monitoring</span>
                         </div>
 
                     </div>
 
 
-                    <div class="sensor-list">
+                    <!-- LEFT (bottom): statistics -->
+                    <div class="info-stats">
 
-                        <div class="sensor">
+                        <div class="info-stat-row">
+                            <span class="info-stat-label">Total Events</span>
+                            <strong class="info-stat-value" id="total-events">0</strong>
+                        </div>
 
-                            <div class="sensor-name">
-                                <span class="sensor-indicator green"></span>
+                        <div class="info-stat-row">
+                            <span class="info-stat-label">Today's Events</span>
+                            <strong class="info-stat-value" id="today-events">0</strong>
+                        </div>
 
-                                <div>
-                                    <strong>PIR Motion Sensor</strong>
-                                    <small>GPIO Input</small>
-                                </div>
+                        <div class="info-stat-row">
+                            <span class="info-stat-label">Last Detection</span>
+                            <strong class="info-stat-value" id="last-detection-time">&mdash;</strong>
+                        </div>
+
+                    </div>
+
+
+                    <!-- RIGHT: large camera image -->
+                    <div class="capture-image-column">
+
+                        <div class="capture-image-wrap">
+
+                            <img
+                                id="capture-image"
+                                class="capture-image"
+                                alt="Latest surveillance capture"
+                                hidden>
+
+                            <div class="capture-placeholder" id="capture-placeholder">
+                                No surveillance events yet.
                             </div>
 
-                            <span class="sensor-status">
-                                CLEAR
-                            </span>
-
-                        </div>
-
-
-                        <div class="sensor">
-
-                            <div class="sensor-name">
-                                <span class="sensor-indicator gray"></span>
-
-                                <div>
-                                    <strong>Buzzer</strong>
-                                    <small>GPIO Output</small>
-                                </div>
-                            </div>
-
-                            <span class="sensor-status off">
-                                OFF
-                            </span>
-
-                        </div>
-
-
-                        <div class="sensor">
-
-                            <div class="sensor-name">
-                                <span class="sensor-indicator gray"></span>
-
-                                <div>
-                                    <strong>Warning LED</strong>
-                                    <small>GPIO Output</small>
-                                </div>
-                            </div>
-
-                            <span class="sensor-status off">
-                                OFF
-                            </span>
-
                         </div>
 
                     </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- LATEST DETECTION -->
-            <section class="panel detection-panel">
-
-                <div class="panel-header">
-
-                    <div>
-                        <h2>Latest Detection</h2>
-                        <span>Most recent motion event</span>
-                    </div>
-
-                    <button
-                        class="simulate-button"
-                        onclick="simulateMotion()">
-
-                        Simulate Motion
-
-                    </button>
-
-                </div>
-
-
-                <div class="empty-detection" id="latest-detection-panel">
-
-                    <div class="empty-icon">
-                        ✓
-                    </div>
-
-                    <h3 id="latest-detection-title">System Ready</h3>
-
-                    <p id="latest-detection-text">
-                        Click "Simulate Motion" to test the surveillance system.
-                    </p>
 
                 </div>
 
@@ -296,7 +203,31 @@
 
     </div>
 
-        <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+    <!-- IMAGE PREVIEW MODAL (View Image button) -->
+    <div
+        id="image-modal"
+        class="image-modal"
+        onclick="closeImagePreview()">
+
+        <div
+            class="modal-content"
+            onclick="event.stopPropagation()">
+
+            <button
+                class="modal-close"
+                onclick="closeImagePreview()"
+                aria-label="Close image preview">
+                &times;
+            </button>
+
+            <img id="modal-image" alt="Enlarged surveillance capture">
+
+        </div>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 
 </body>
 

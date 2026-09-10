@@ -5,10 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Detection History | Sentinel</title>
+    <title>Event History | Smart Home Surveillance</title>
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- ?v=2 is a manual cache-buster: bump it whenever style.css changes,
+         so a normal page refresh is guaranteed to pick up the new file
+         instead of an old copy the browser (or its back/forward cache)
+         may have kept from an earlier visit to this page. -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2">
 </head>
 
 <body>
@@ -18,113 +21,119 @@
         <!-- SIDEBAR -->
         <aside class="sidebar">
 
-            <div class="logo">
+            <div class="brand">
+                <div class="brand-mark">&#9673;</div>
 
-                <div class="logo-icon">
-                    ◉
+                <div class="brand-text">
+                    <span class="brand-line">SMART HOME</span>
+                    <span class="brand-line brand-line-accent">SURVEILLANCE</span>
                 </div>
-
-                <div>
-                    <h2>Sentinel</h2>
-                    <span>Smart Surveillance</span>
-                </div>
-
             </div>
 
-
-            <nav>
-
-                <a href="/" class="nav-item">
-                    <span>▦</span>
-                    Dashboard
-                </a>
-
-
-                <a href="/history" class="nav-item active">
-                    <span>◷</span>
-                    Detection History
-                </a>
-
-
-                <a href="#" class="nav-item">
-                    <span>⚙</span>
-                    Settings
-                </a>
-
+            <nav class="nav">
+                <a href="/" class="nav-link">Dashboard</a>
+                <a href="/history" class="nav-link active">Event History</a>
             </nav>
 
-
             <div class="sidebar-footer">
+                <span class="mode-dot" aria-hidden="true"></span>
 
-                <div class="connection-dot"></div>
-
-                Raspberry Pi Connected
-
+                <div>
+                    <strong>SIMULATION MODE</strong>
+                    <small>No Hardware Connected</small>
+                </div>
             </div>
 
         </aside>
 
 
         <!-- MAIN CONTENT -->
-
         <main class="main">
 
-            <header class="topbar">
-
+            <header class="page-header">
                 <div>
-                    <h1>Detection History</h1>
-
-                    <p>
-                        Record of all detected motion events
-                    </p>
+                    <h1>Event History</h1>
+                    <p>Surveillance events recorded by the system.</p>
                 </div>
-
             </header>
 
 
-            <section class="panel history-panel">
+            <!-- STATISTICS -->
+            <section class="stats-grid">
 
-                <div class="panel-header">
-
-                    <div>
-                        <h2>Motion Events</h2>
-
-                        <span>
-                            All recorded detections
-                        </span>
-                    </div>
-
+                <div class="stat-card">
+                    <span class="stat-label">Total Events</span>
+                    <strong id="total-events">0</strong>
                 </div>
 
+                <div class="stat-card">
+                    <span class="stat-label">Today's Events</span>
+                    <strong id="today-events">0</strong>
+                </div>
 
-                <div class="history-container">
+                <div class="stat-card">
+                    <span class="stat-label">Last Detection</span>
+                    <strong id="last-detection-time">&mdash;</strong>
+                </div>
 
-                    <table class="history-table">
+            </section>
+
+
+            <!-- EVENT TABLE -->
+            <section class="panel table-panel">
+
+                <div class="panel-header">
+                    <h2>Recorded Events</h2>
+                    <span>All detections saved by the system</span>
+                </div>
+
+                <div class="table-scroll" id="table-scroll">
+
+                    <table class="data-table">
+
+                        <!-- table-layout: fixed (in the CSS) makes column widths come
+                             ONLY from this colgroup, so the header row and every data
+                             row always share the exact same column structure - widths
+                             no longer shift based on each row's content. -->
+                        <colgroup>
+                            <col class="col-id">
+                            <col class="col-datetime">
+                            <col class="col-event">
+                            <col class="col-image">
+                            <col class="col-alarm">
+                        </colgroup>
 
                         <thead>
-
                             <tr>
-                                <th>ID</th>
-                                <th>Captured Image</th>
-                                <th>Detection Date and Time</th>
-                                <th>Status</th>
+                                <th>Event ID</th>
+                                <th>Date &amp; Time</th>
+                                <th>Event</th>
+                                <th>Image</th>
+                                <th>Alarm</th>
                             </tr>
-
                         </thead>
 
-
                         <tbody id="history-body">
-
                             <tr>
-                                <td colspan="4">
-                                    Loading detection history...
-                                </td>
+                                <td colspan="5" class="table-message">Loading events...</td>
                             </tr>
-
                         </tbody>
 
                     </table>
 
+                </div>
+
+                <!-- EMPTY STATE -->
+                <div class="empty-state" id="empty-state" hidden>
+                    <h3>No surveillance events yet</h3>
+                    <p>The system has not detected any motion.</p>
+
+                    <button
+                        class="btn btn-primary"
+                        id="empty-simulate-btn"
+                        onclick="simulateMotionFromHistory()">
+                        Simulate Motion
+                    </button>
                 </div>
 
             </section>
@@ -133,34 +142,31 @@
 
     </div>
 
-<!-- IMAGE PREVIEW MODAL -->
 
-<div
-    id="image-modal"
-    class="image-modal"
-    onclick="closeImagePreview()">
-
+    <!-- IMAGE PREVIEW MODAL -->
     <div
-        class="modal-content"
-        onclick="event.stopPropagation()">
+        id="image-modal"
+        class="image-modal"
+        onclick="closeImagePreview()">
 
-        <button
-            class="modal-close"
-            onclick="closeImagePreview()">
+        <div
+            class="modal-content"
+            onclick="event.stopPropagation()">
 
-            ×
+            <button
+                class="modal-close"
+                onclick="closeImagePreview()"
+                aria-label="Close image preview">
+                &times;
+            </button>
 
-        </button>
+            <img id="modal-image" alt="Enlarged detection capture">
 
-        <img
-            id="modal-image"
-            alt="Detection Preview">
+        </div>
 
     </div>
 
-</div>
-
-    <script src="{{ url_for('static', filename='js/history.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/history.js') }}?v=2"></script>
 
 </body>
 
