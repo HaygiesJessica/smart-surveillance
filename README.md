@@ -40,10 +40,3 @@ To run this system on a Raspberry Pi, you will need:
 | **LED (Anode)** | GPIO 17 | Pin 11 |
 | **Buzzer (+)** | GPIO 27 | Pin 13 |
 | **GND** | Ground | Pin 6, 9, 14, etc. |
-
-## Installation & Setup
-
-### 1. Project Directory
-Ensure you are in the root folder of the project.
-```bash
-cd D:\EmbeddedLab\SmartSurveillance\smart-surveillance
