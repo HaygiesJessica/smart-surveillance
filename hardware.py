@@ -1,72 +1,57 @@
-"""
-Hardware Abstraction Layer
-===========================
-This module represents the physical OUTPUT devices of the surveillance
-system: the warning LED and the buzzer.
-
-There is no Raspberry Pi connected yet, so these functions only simulate
-the hardware by flipping simple True/False flags. When the real
-Raspberry Pi, LED and buzzer are wired up, only the bodies of the
-functions below need to change (to real RPi.GPIO calls) - nothing else
-in the project has to know the difference.
-"""
-
 import config
 
-# Simulated hardware state. On a real Raspberry Pi these would not exist
-# as variables - the actual GPIO pins would hold the state instead.
+# Simulated hardware state
 _led_on = False
 _buzzer_on = False
 
+# Real hardware setup
+try:
+    import RPi.GPIO as GPIO
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(config.LED_PIN, GPIO.OUT)
+    GPIO.setup(config.BUZZER_PIN, GPIO.OUT)
+    GPIO.output(config.LED_PIN, GPIO.LOW)
+    GPIO.output(config.BUZZER_PIN, GPIO.LOW)
+    HARDWARE_AVAILABLE = True
+except (ImportError, RuntimeError):
+    # ImportError happens on Windows; RuntimeError happens if GPIO is already in use
+    HARDWARE_AVAILABLE = False
+
 
 def activate_led():
-    """Turn the warning LED on (simulated)."""
     global _led_on
     _led_on = True
-
-    if not config.SIMULATION_MODE:
-        # FUTURE (Raspberry Pi): GPIO.output(LED_PIN, GPIO.HIGH)
-        pass
+    if not config.SIMULATION_MODE and HARDWARE_AVAILABLE:
+        GPIO.output(config.LED_PIN, GPIO.HIGH)
 
 
 def deactivate_led():
-    """Turn the warning LED off (simulated)."""
     global _led_on
     _led_on = False
-
-    if not config.SIMULATION_MODE:
-        # FUTURE (Raspberry Pi): GPIO.output(LED_PIN, GPIO.LOW)
-        pass
+    if not config.SIMULATION_MODE and HARDWARE_AVAILABLE:
+        GPIO.output(config.LED_PIN, GPIO.LOW)
 
 
 def activate_buzzer():
-    """Turn the buzzer on (simulated)."""
     global _buzzer_on
     _buzzer_on = True
-
-    if not config.SIMULATION_MODE:
-        # FUTURE (Raspberry Pi): GPIO.output(BUZZER_PIN, GPIO.HIGH)
-        pass
+    if not config.SIMULATION_MODE and HARDWARE_AVAILABLE:
+        GPIO.output(config.BUZZER_PIN, GPIO.HIGH)
 
 
 def deactivate_buzzer():
-    """Turn the buzzer off (simulated)."""
     global _buzzer_on
     _buzzer_on = False
-
-    if not config.SIMULATION_MODE:
-        # FUTURE (Raspberry Pi): GPIO.output(BUZZER_PIN, GPIO.LOW)
-        pass
+    if not config.SIMULATION_MODE and HARDWARE_AVAILABLE:
+        GPIO.output(config.BUZZER_PIN, GPIO.LOW)
 
 
 def activate_alarm():
-    """Turn on both the LED and the buzzer together."""
     activate_led()
     activate_buzzer()
 
 
 def deactivate_alarm():
-    """Turn off both the LED and the buzzer together."""
     deactivate_led()
     deactivate_buzzer()
 
@@ -77,3 +62,8 @@ def led_is_on():
 
 def buzzer_is_on():
     return _buzzer_on
+
+
+def cleanup_hardware():
+    if not config.SIMULATION_MODE and HARDWARE_AVAILABLE:
+        GPIO.cleanup()

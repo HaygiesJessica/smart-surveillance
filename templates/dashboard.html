@@ -47,20 +47,13 @@
         <main class="main">
 
             <!-- HEADER -->
+                        
             <header class="page-header">
-
                 <div>
                     <h1>Dashboard</h1>
-                    <p>Smart Home Surveillance System</p>
+                    <p>Smart Home Surveillance System (Automated)</p>
                 </div>
-
-                <button
-                    class="btn btn-primary"
-                    id="simulate-btn"
-                    onclick="simulateMotion()">
-                    Simulate Motion
-                </button>
-
+                <!-- Button removed: System is now fully automated by the PIR sensor -->
             </header>
 
 
@@ -227,8 +220,7 @@
 
     </div>
 
-    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
-
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}?v=3"></script>
 </body>
 
 </html>

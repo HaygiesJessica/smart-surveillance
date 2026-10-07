@@ -1,2 +1,4 @@
 Flask==3.0.3
 pillow==12.3.0
+RPi.GPIO==0.7.1
+opencv-python==4.10.0.84
