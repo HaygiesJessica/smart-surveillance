@@ -1,182 +1,173 @@
-// History page logic: loads the summary stats and the full event table
-// from the Flask API. Uses the same /api/stats and /api/detections
-// endpoints as before - only the way the results are displayed changed.
+"use strict";
 
-const MONTH_NAMES = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
-];
+(() => {
+  const U = window.SecurityUI;
+  const pageSize = 20;
 
-// The backend stores timestamps like "2026-09-10 11:41:53 AM".
-// This turns that into "September 10, 2026 - 11:41:53 AM".
-function formatDetectedAt(raw) {
-    if (!raw) return "";
+  let events = [];
+  let page = 1;
+  let key = "";
+  let loading = false;
+  let timer;
 
-    const match = raw.match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}:\d{2}:\d{2} (?:AM|PM))$/);
-    if (!match) return raw;
+  function render() {
+    const query = U.byId("event-search").value.trim().toLowerCase();
+    const date = U.byId("event-date").value;
+    const alarm = U.byId("alarm-filter").value;
 
-    const [, year, month, day, time] = match;
-    const monthName = MONTH_NAMES[parseInt(month, 10) - 1];
+    const filtered = events.filter(event =>
+      (
+        !query ||
+        [
+          event.id,
+          `#${String(event.id).padStart(3, "0")}`,
+          event.detected_at,
+          event.event_type,
+          event.alarm_status,
+        ].join(" ").toLowerCase().includes(query)
+      ) &&
+      (!date || (event.detected_at || "").slice(0, 10) === date) &&
+      (!alarm || event.alarm_status === alarm)
+    );
 
-    return `${monthName} ${parseInt(day, 10)}, ${year} — ${time}`;
-}
+    const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
+    page = Math.min(page, pages);
 
-// Pulls just the "11:41:53 AM" part out, for the compact stat card.
-function formatTimeOnly(raw) {
-    if (!raw) return "—";
+    U.eventRows(
+      U.byId("history-body"),
+      filtered.slice((page - 1) * pageSize, page * pageSize)
+    );
 
-    const match = raw.match(/(\d{2}:\d{2}:\d{2} (?:AM|PM))$/);
-    return match ? match[1] : raw;
-}
+    U.text(
+      "results-count",
+      `${filtered.length} matching event${
+        filtered.length === 1 ? "" : "s"
+      } · ${events.length} recorded`
+    );
 
-async function loadStats() {
+    U.text("page-label", `Page ${page} of ${pages}`);
+    U.byId("previous-page").disabled = page === 1;
+    U.byId("next-page").disabled = page === pages;
+  }
+
+  function alarms() {
+    const select = U.byId("alarm-filter");
+    const selected = select.value;
+
+    const all = document.createElement("option");
+    all.value = "";
+    all.textContent = "All statuses";
+
+    select.replaceChildren(all);
+
+    [...new Set(events.map(event => event.alarm_status).filter(Boolean))]
+      .sort()
+      .forEach(value => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        select.append(option);
+      });
+
+    select.value = [...select.options].some(
+      option => option.value === selected
+    ) ? selected : "";
+  }
+
+  async function refresh() {
+    if (loading) return;
+
+    loading = true;
+    U.byId("refresh-btn").disabled = true;
+
     try {
-        const response = await fetch("/api/stats");
+      const [stats, records, status] = await Promise.all([
+        U.api("/api/stats"),
+        U.api("/api/detections"),
+        U.api("/api/status"),
+      ]);
 
-        if (!response.ok) {
-            throw new Error("Failed to load statistics");
-        }
+      U.updateMode(status);
+      U.text("total-events", stats.total_events);
+      U.text("today-events", stats.today_events);
 
-        const stats = await response.json();
+      U.text(
+        "last-detection",
+        stats.latest_event?.detected_at || "No detections"
+      );
 
-        document.getElementById("total-events").textContent = stats.total_events;
-        document.getElementById("today-events").textContent = stats.today_events;
+      const newKey = JSON.stringify(records);
 
-        document.getElementById("last-detection-time").textContent =
-            stats.latest_event ? formatTimeOnly(stats.latest_event.detected_at) : "—";
+      if (newKey !== key) {
+        events = records;
+        key = newKey;
+        alarms();
+        render();
+      }
 
+      U.reportError("history", null);
     } catch (error) {
-        console.error("Error loading statistics:", error);
-    }
-}
+      U.disconnected();
 
+      U.reportError(
+        "history",
+        `History could not be updated. ${error.message}`
+      );
 
-async function loadDetectionHistory() {
-    const historyBody = document.getElementById("history-body");
-    const tableScroll = document.getElementById("table-scroll");
-    const emptyState = document.getElementById("empty-state");
-
-    try {
-        const response = await fetch("/api/detections");
-
-        if (!response.ok) {
-            throw new Error("Failed to load detection history");
-        }
-
-        const detections = await response.json();
-
-        if (detections.length === 0) {
-            historyBody.innerHTML = "";
-            tableScroll.hidden = true;
-            emptyState.hidden = false;
-            return;
-        }
-
-        tableScroll.hidden = false;
-        emptyState.hidden = true;
-        historyBody.innerHTML = "";
-
-        detections.forEach(detection => {
-
-            let imageContent = `
-                <span class="no-image">No Image</span>
-            `;
-
-            if (detection.image) {
-                imageContent = `
-                    <img
-                        src="/static/captures/${detection.image}"
-                        class="history-image"
-                        alt="Captured photo for event #${detection.id}"
-                        onclick="openImagePreview('/static/captures/${detection.image}')">
-                `;
-            }
-
-            const eventType = (detection.event_type || "Motion Detected").toUpperCase();
-            const alarmStatus = (detection.alarm_status || "Activated").toUpperCase();
-
-            const row = document.createElement("tr");
-
-            row.innerHTML = `
-                <td>#${String(detection.id).padStart(3, "0")}</td>
-
-                <td>${formatDetectedAt(detection.detected_at)}</td>
-
-                <td><span class="badge badge-motion">${eventType}</span></td>
-
-                <td>${imageContent}</td>
-
-                <td><span class="badge badge-alarm">${alarmStatus}</span></td>
-            `;
-
-            historyBody.appendChild(row);
-        });
-
-    } catch (error) {
-        console.error(
-            "Error loading detection history:",
-            error
+      if (!key) {
+        U.text(
+          "results-count",
+          "History unavailable. Use Refresh to retry."
         );
 
-        tableScroll.hidden = false;
-        emptyState.hidden = true;
-
-        historyBody.innerHTML = `
-            <tr>
-                <td colspan="5" class="table-message">
-                    Error loading detection history.
-                </td>
-            </tr>
-        `;
+        U.tableMessage(
+          U.byId("history-body"),
+          "Event history is unavailable. Use Refresh to retry."
+        );
+      }
+    } finally {
+      loading = false;
+      U.byId("refresh-btn").disabled = false;
     }
-}
+  }
 
+  ["event-search", "event-date", "alarm-filter"].forEach(id => {
+    U.byId(id).addEventListener("input", () => {
+      page = 1;
+      render();
+    });
+  });
 
-// Reuses the exact same simulation endpoint as the dashboard button.
-// Since this page doesn't show the live PIR/camera/LED/buzzer state,
-// the user is sent to the dashboard to watch the sequence happen.
-async function simulateMotionFromHistory() {
-    const button = document.getElementById("empty-simulate-btn");
+  U.byId("clear-filters").addEventListener("click", () => {
+    ["event-search", "event-date", "alarm-filter"].forEach(id => {
+      U.byId(id).value = "";
+    });
 
-    if (button) {
-        button.disabled = true;
-        button.textContent = "Starting...";
+    page = 1;
+    render();
+  });
+
+  U.byId("previous-page").addEventListener("click", () => {
+    page--;
+    render();
+  });
+
+  U.byId("next-page").addEventListener("click", () => {
+    page++;
+    render();
+  });
+
+  U.byId("refresh-btn").addEventListener("click", refresh);
+
+  async function poll() {
+    clearTimeout(timer);
+
+    if (!document.hidden) {
+      await refresh();
     }
 
-    try {
-        await fetch("/api/simulate-motion", { method: "POST" });
-    } catch (error) {
-        console.error("Error simulating motion:", error);
-    }
+    timer = setTimeout(poll, 15000);
+  }
 
-    window.location.href = "/";
-}
-
-
-loadStats();
-loadDetectionHistory();
-
-setInterval(loadStats, 3000);
-setInterval(loadDetectionHistory, 3000);
-
-function openImagePreview(imageSource) {
-
-    const modal =
-        document.getElementById("image-modal");
-
-    const modalImage =
-        document.getElementById("modal-image");
-
-    modalImage.src = imageSource;
-
-    modal.classList.add("show");
-}
-
-
-function closeImagePreview() {
-
-    const modal =
-        document.getElementById("image-modal");
-
-    modal.classList.remove("show");
-}
+  poll();
+})();

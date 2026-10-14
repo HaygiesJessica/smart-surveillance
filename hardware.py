@@ -1,26 +1,27 @@
 import config
 
-# Simulated hardware state
+# Last commanded output states.
 _led_on = False
 _buzzer_on = False
 
-# Real hardware setup
 try:
     import RPi.GPIO as GPIO
+
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(config.LED_PIN, GPIO.OUT)
     GPIO.setup(config.BUZZER_PIN, GPIO.OUT)
     GPIO.output(config.LED_PIN, GPIO.LOW)
     GPIO.output(config.BUZZER_PIN, GPIO.LOW)
+
     HARDWARE_AVAILABLE = True
 except (ImportError, RuntimeError):
-    # ImportError happens on Windows; RuntimeError happens if GPIO is already in use
     HARDWARE_AVAILABLE = False
 
 
 def activate_led():
     global _led_on
     _led_on = True
+
     if not config.SIMULATION_MODE and HARDWARE_AVAILABLE:
         GPIO.output(config.LED_PIN, GPIO.HIGH)
 
@@ -28,6 +29,7 @@ def activate_led():
 def deactivate_led():
     global _led_on
     _led_on = False
+
     if not config.SIMULATION_MODE and HARDWARE_AVAILABLE:
         GPIO.output(config.LED_PIN, GPIO.LOW)
 
@@ -35,6 +37,7 @@ def deactivate_led():
 def activate_buzzer():
     global _buzzer_on
     _buzzer_on = True
+
     if not config.SIMULATION_MODE and HARDWARE_AVAILABLE:
         GPIO.output(config.BUZZER_PIN, GPIO.HIGH)
 
@@ -42,6 +45,7 @@ def activate_buzzer():
 def deactivate_buzzer():
     global _buzzer_on
     _buzzer_on = False
+
     if not config.SIMULATION_MODE and HARDWARE_AVAILABLE:
         GPIO.output(config.BUZZER_PIN, GPIO.LOW)
 

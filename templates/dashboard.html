@@ -1,226 +1,447 @@
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "base.html" %}
 
-    <title>Dashboard | Smart Home Surveillance</title>
+{% block title %}Dashboard{% endblock %}
+{% block page %}dashboard{% endblock %}
+{% block crumb %}Dashboard{% endblock %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
+{% block content %}
 
-<body class="dashboard-page">
+<!-- PAGE HEADER -->
+<header class="page-header" id="overview">
+  <div>
+    <div class="eyebrow">SECURITY OPERATIONS</div>
+    <h1>Dashboard<span class="heading-dot">.</span></h1>
+    <p>A clear view of your home's security activity.</p>
+  </div>
 
-    <div class="app">
-
-        <!-- SIDEBAR -->
-        <aside class="sidebar">
-
-            <div class="brand">
-                <div class="brand-mark">&#9673;</div>
-
-                <div class="brand-text">
-                    <span class="brand-line">SMART HOME</span>
-                    <span class="brand-line brand-line-accent">SURVEILLANCE</span>
-                </div>
-            </div>
-
-            <nav class="nav">
-                <a href="/" class="nav-link active">Dashboard</a>
-                <a href="/history" class="nav-link">Event History</a>
-            </nav>
-
-            <div class="sidebar-footer">
-                <span class="mode-dot" aria-hidden="true"></span>
-
-                <div>
-                    <strong>SIMULATION MODE</strong>
-                    <small>No Hardware Connected</small>
-                </div>
-            </div>
-
-        </aside>
+  <button
+    type="button"
+    id="simulate-btn"
+    class="button primary"
+    hidden>
+    <span aria-hidden="true">＋</span>
+    Simulate motion
+  </button>
+</header>
 
 
-        <!-- MAIN CONTENT -->
-        <main class="main">
+<!-- SECURITY STATISTICS -->
+<section class="stats-grid" aria-label="Security statistics">
 
-            <!-- HEADER -->
-                        
-            <header class="page-header">
-                <div>
-                    <h1>Dashboard</h1>
-                    <p>Smart Home Surveillance System (Automated)</p>
-                </div>
-                <!-- Button removed: System is now fully automated by the PIR sensor -->
-            </header>
+  <article class="stat-card">
+    <div class="stat-top">
+      Camera status
+      <span aria-hidden="true">▣</span>
+    </div>
+    <strong id="camera-stat">—</strong>
+    <small id="camera-stat-note">Waiting for status</small>
+  </article>
 
+  <article class="stat-card">
+    <div class="stat-top">
+      Incidents today
+      <span aria-hidden="true">⚑</span>
+    </div>
+    <strong id="today-events">—</strong>
+    <small>Recorded motion events</small>
+  </article>
 
-            <!-- SYSTEM STATUS -->
-            <section class="status-hero state-monitoring" id="status-hero" aria-live="polite">
+  <article class="stat-card">
+    <div class="stat-top">
+      Motion sensor
+      <span aria-hidden="true">⌁</span>
+    </div>
+    <strong id="motion-stat">—</strong>
+    <small>Reported PIR state</small>
+  </article>
 
-                <span class="status-hero-label">System Status</span>
+  <article class="stat-card">
+    <div class="stat-top">
+      Total recorded events
+      <span aria-hidden="true">▤</span>
+    </div>
+    <strong id="total-events">—</strong>
+    <small>All events in the local database</small>
+  </article>
 
-                <div class="status-hero-value">
-                    <span class="status-dot success" id="status-hero-dot" aria-hidden="true"></span>
-                    <span id="status-hero-text">MONITORING</span>
-                </div>
-
-                <p class="status-hero-hint" id="status-hero-hint">
-                    All sensors normal. Waiting for motion.
-                </p>
-
-            </section>
-
-
-            <!-- DEVICE STATUS CARDS -->
-            <section class="device-grid">
-
-                <div class="device-card">
-                    <span class="device-name">PIR Sensor</span>
-                    <div class="device-value">
-                        <span class="status-dot success" id="pir-dot" aria-hidden="true"></span>
-                        <span id="pir-text">NO MOTION</span>
-                    </div>
-                </div>
-
-                <div class="device-card">
-                    <span class="device-name">Camera</span>
-                    <div class="device-value">
-                        <span class="status-dot success" id="camera-dot" aria-hidden="true"></span>
-                        <span id="camera-text">READY</span>
-                    </div>
-                </div>
-
-                <div class="device-card">
-                    <span class="device-name">LED Alarm</span>
-                    <div class="device-value">
-                        <span class="status-dot neutral" id="led-dot" aria-hidden="true"></span>
-                        <span id="led-text">OFF</span>
-                    </div>
-                </div>
-
-                <div class="device-card">
-                    <span class="device-name">Buzzer</span>
-                    <div class="device-value">
-                        <span class="status-dot neutral" id="buzzer-dot" aria-hidden="true"></span>
-                        <span id="buzzer-text">OFF</span>
-                    </div>
-                </div>
-
-            </section>
+</section>
 
 
-            <!-- LATEST CAPTURE: left = event info + statistics, right = large camera -->
-            <section class="panel capture-panel">
+<!-- SYSTEM STATUS -->
+<div
+  id="system-status"
+  class="system-status"
+  role="status"
+  aria-live="polite">
 
-                <div class="capture-columns">
+  <span
+    class="status-dot warning"
+    id="system-dot"
+    aria-hidden="true">
+  </span>
 
-                    <!-- LEFT (top): event details -->
-                    <div class="capture-details">
+  <strong id="system-state">
+    Connecting to monitoring system
+  </strong>
 
-                        <div class="capture-heading">
-                            <h2>Latest Capture</h2>
-                            <span>Most recent surveillance image</span>
-                        </div>
+  <span id="system-hint">
+    Waiting for the first update
+  </span>
 
-                        <div class="capture-info" id="capture-info" hidden>
-
-                            <span class="event-id" id="capture-event-id">Event #000</span>
-                            <span class="capture-time" id="capture-time"></span>
-
-                            <div class="capture-badges">
-                                <span class="badge badge-motion">Motion Detected</span>
-                                <span class="badge badge-alarm" id="capture-alarm-badge">Activated</span>
-                            </div>
-
-                            <button
-                                type="button"
-                                class="btn btn-secondary capture-view-btn"
-                                id="view-image-btn"
-                                onclick="openImagePreview()">
-                                View Image
-                            </button>
-
-                        </div>
-
-                    </div>
+</div>
 
 
-                    <!-- LEFT (bottom): statistics -->
-                    <div class="info-stats">
+<!-- CAMERA AND DEVICE MONITORING -->
+<div class="monitor-grid">
 
-                        <div class="info-stat-row">
-                            <span class="info-stat-label">Total Events</span>
-                            <strong class="info-stat-value" id="total-events">0</strong>
-                        </div>
+  <!-- CAMERA PANEL -->
+  <section class="panel camera-panel" id="camera">
 
-                        <div class="info-stat-row">
-                            <span class="info-stat-label">Today's Events</span>
-                            <strong class="info-stat-value" id="today-events">0</strong>
-                        </div>
+    <div class="panel-header">
+      <div>
+        <h2>Camera monitoring</h2>
+        <p>Camera 01 · Latest still capture</p>
+      </div>
 
-                        <div class="info-stat-row">
-                            <span class="info-stat-label">Last Detection</span>
-                            <strong class="info-stat-value" id="last-detection-time">&mdash;</strong>
-                        </div>
+      <span class="tag" id="camera-label">
+        Checking…
+      </span>
+    </div>
 
-                    </div>
+    <div class="camera-stage">
 
+      <img
+        id="capture-image"
+        alt="Latest surveillance still capture"
+        hidden>
 
-                    <!-- RIGHT: large camera image -->
-                    <div class="capture-image-column">
+      <div
+        id="capture-placeholder"
+        class="capture-placeholder">
 
-                        <div class="capture-image-wrap">
+        <span aria-hidden="true">▣</span>
+        <h3>No capture available</h3>
+        <p>
+          A captured image will appear after a motion event.
+        </p>
 
-                            <img
-                                id="capture-image"
-                                class="capture-image"
-                                alt="Latest surveillance capture"
-                                hidden>
+      </div>
 
-                            <div class="capture-placeholder" id="capture-placeholder">
-                                No surveillance events yet.
-                            </div>
+      <div class="camera-overlay">
 
-                        </div>
+        <span>
+          CAM 01
+          <span class="overlay-divider">/</span>
+          STILL IMAGE
+        </span>
 
-                    </div>
+        <button
+          type="button"
+          id="enlarge-btn"
+          class="icon-button"
+          aria-label="Enlarge latest capture"
+          disabled>
+          ⛶
+        </button>
 
-                </div>
-
-            </section>
-
-        </main>
+      </div>
 
     </div>
 
+    <div class="capture-footer">
 
-    <!-- IMAGE PREVIEW MODAL (View Image button) -->
-    <div
-        id="image-modal"
-        class="image-modal"
-        onclick="closeImagePreview()">
+      <div>
+        <span
+          class="status-dot neutral"
+          aria-hidden="true">
+        </span>
 
-        <div
-            class="modal-content"
-            onclick="event.stopPropagation()">
+        <span id="capture-caption">
+          Waiting for a recorded capture
+        </span>
+      </div>
 
-            <button
-                class="modal-close"
-                onclick="closeImagePreview()"
-                aria-label="Close image preview">
-                &times;
-            </button>
+      <span id="capture-time">—</span>
 
-            <img id="modal-image" alt="Enlarged surveillance capture">
+    </div>
 
+    <p class="panel-note" id="camera-connection">
+      Camera connection has not been verified.
+      This panel displays still captures, not live video.
+    </p>
+
+  </section>
+
+
+  <!-- DEVICE MONITORING -->
+  <section class="panel" id="devices">
+
+    <div class="panel-header">
+      <div>
+        <h2>Device monitoring</h2>
+        <p>Current reported device states</p>
+      </div>
+
+      <span class="small-label">4 DEVICES</span>
+    </div>
+
+    <div class="device-list">
+
+      <!-- PIR SENSOR -->
+      <div class="device-row">
+
+        <span class="device-icon" aria-hidden="true">⌁</span>
+
+        <div>
+          <strong>PIR motion sensor</strong>
+          <small>Motion detection</small>
         </div>
 
+        <span class="device-state" id="pir-state">—</span>
+
+      </div>
+
+
+      <!-- CAMERA -->
+      <div class="device-row">
+
+        <span class="device-icon" aria-hidden="true">▣</span>
+
+        <div>
+          <strong>Camera 01</strong>
+          <small>Still image capture</small>
+        </div>
+
+        <span class="device-state" id="camera-state">—</span>
+
+      </div>
+
+
+      <!-- LED -->
+      <div class="device-row">
+
+        <span class="device-icon" aria-hidden="true">☼</span>
+
+        <div>
+          <strong>LED indicator</strong>
+          <small>Visual alarm</small>
+        </div>
+
+        <span class="device-state" id="led-state">—</span>
+
+      </div>
+
+
+      <!-- BUZZER -->
+      <div class="device-row">
+
+        <span class="device-icon" aria-hidden="true">♬</span>
+
+        <div>
+          <strong>Buzzer</strong>
+          <small>Audible alarm</small>
+        </div>
+
+        <span class="device-state" id="buzzer-state">—</span>
+
+      </div>
+
     </div>
 
-    <script src="{{ url_for('static', filename='js/dashboard.js') }}?v=3"></script>
-</body>
+    <div class="device-footnote">
+      States come from the monitoring service.
+      Hardware connectivity is not independently verified.
+    </div>
 
-</html>
+  </section>
+
+</div>
+
+
+<!-- RECENT ALERTS -->
+<section class="panel" id="alerts">
+
+  <div class="panel-header">
+
+    <div>
+      <h2>
+        Recent alerts
+        <span class="count-badge" id="alert-count">—</span>
+      </h2>
+
+      <p>
+        Latest recorded motion detections · Historical alarm states
+      </p>
+    </div>
+
+    <a
+      class="text-link"
+      href="{{ url_for('history') }}">
+      View all events →
+    </a>
+
+  </div>
+
+  <div class="table-scroll">
+
+    <table>
+
+      <thead>
+        <tr>
+          <th scope="col">Event ID</th>
+          <th scope="col">Detected at</th>
+          <th scope="col">Motion status</th>
+          <th scope="col">Alarm status</th>
+          <th scope="col">Capture</th>
+        </tr>
+      </thead>
+
+      <tbody id="alerts-body">
+        <tr>
+          <td colspan="5" class="table-message">
+            Loading recorded events…
+          </td>
+        </tr>
+      </tbody>
+
+    </table>
+
+  </div>
+
+</section>
+
+
+<!-- DETECTION ANALYTICS -->
+<section class="panel" id="analytics">
+
+  <div class="panel-header">
+
+    <div>
+      <h2>Detection activity</h2>
+      <p>
+        Daily event counts from recorded history · Last 7 server dates
+      </p>
+    </div>
+
+    <span class="tag">7 DAYS</span>
+
+  </div>
+
+  <div class="analytics-summary">
+    <strong id="week-total">—</strong>
+    <span>events in this period</span>
+  </div>
+
+  <div
+    id="daily-chart"
+    class="daily-chart"
+    role="img"
+    aria-label="Daily detection counts">
+  </div>
+
+  <p class="panel-note" id="analytics-note">
+    Loading event history…
+  </p>
+
+</section>
+
+
+<!-- SYSTEM SETTINGS -->
+<section class="panel" id="settings">
+
+  <div class="panel-header">
+
+    <div>
+      <h2>System settings</h2>
+      <p>Read-only runtime configuration</p>
+    </div>
+
+    <span class="tag">READ ONLY</span>
+
+  </div>
+
+  {% if runtime_settings is defined and runtime_settings %}
+
+  <dl class="settings-grid">
+
+    <div>
+      <dt>Operating mode</dt>
+      <dd id="settings-mode">—</dd>
+    </div>
+
+    <div>
+      <dt>Capture source</dt>
+      <dd id="settings-source">—</dd>
+    </div>
+
+    <div>
+      <dt>Alarm duration</dt>
+      <dd>
+        {{ runtime_settings.alarm_duration | default('Not available') }}
+        {% if runtime_settings.alarm_duration is defined %}
+        seconds
+        {% endif %}
+      </dd>
+    </div>
+
+    <div>
+      <dt>GPIO pins · BCM</dt>
+      <dd>
+        PIR {{ runtime_settings.pir_pin | default('—') }}
+        · LED {{ runtime_settings.led_pin | default('—') }}
+        · Buzzer {{ runtime_settings.buzzer_pin | default('—') }}
+      </dd>
+    </div>
+
+  </dl>
+
+  {% else %}
+
+  <dl class="settings-grid">
+
+    <div>
+      <dt>Operating mode</dt>
+      <dd id="settings-mode">—</dd>
+    </div>
+
+    <div>
+      <dt>Capture source</dt>
+      <dd id="settings-source">—</dd>
+    </div>
+
+    <div>
+      <dt>Alarm duration</dt>
+      <dd>Not available</dd>
+    </div>
+
+    <div>
+      <dt>GPIO pins · BCM</dt>
+      <dd>Not available</dd>
+    </div>
+
+  </dl>
+
+  <p class="panel-note">
+    Runtime settings were not supplied by the server.
+  </p>
+
+  {% endif %}
+
+  <p class="panel-note">
+    Settings are managed in the server's config.py.
+    Editing hardware configuration from this dashboard is unavailable.
+  </p>
+
+</section>
+
+{% endblock %}
+
+
+<!-- DASHBOARD JAVASCRIPT -->
+{% block scripts %}
+<script
+  defer
+  src="{{ url_for('static', filename='js/dashboard.js') }}">
+</script>
+{% endblock %}

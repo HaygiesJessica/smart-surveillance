@@ -1,1080 +1,312 @@
-/* =====================================================================
-   SMART HOME SURVEILLANCE SYSTEM - STYLESHEET
-   =====================================================================
-   Organized into sections so it stays easy to navigate:
-
-   1.  Base & Design Tokens
-   2.  Layout
-   3.  Sidebar
-   4.  Header
-   5.  Buttons
-   6.  Status (system status hero + device cards)
-   7.  Cards & Panels
-   8.  Statistics
-   9.  Capture
-   10. Tables
-   11. Empty States
-   12. Image Modal
-   13. Responsive Design
-   ===================================================================== */
-
-
-/* =====================================================================
-   1. BASE & DESIGN TOKENS
-   ===================================================================== */
-
 :root {
-    /* Surfaces */
-    --bg: #0b0f14;
-    --bg-elevated: #111820;
-    --bg-elevated-hover: #161f2a;
-    --border: #212b36;
-
-    /* Text */
-    --text: #e8edf2;
-    --text-secondary: #8d98a5;
-    --text-tertiary: #5b6773;
-
-    /* Accent (primary action / "processing") */
-    --accent: #2f8fff;
-    --accent-bg: #132842;
-
-    /* Status colors */
-    --success: #34d399;
-    --success-bg: #10281f;
-
-    --warning: #f5a524;
-    --warning-bg: #332712;
-
-    --danger: #f0555f;
-    --danger-bg: #341a1d;
-
-    --neutral: #5b6773;
-    --neutral-bg: #1a222c;
-
-    /* Shape & elevation */
-    --radius-sm: 6px;
-    --radius-md: 10px;
-    --radius-lg: 14px;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-    --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.35);
-
-    --font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --bg: #101213;
+  --panel: #191c1e;
+  --panel-light: #202426;
+  --border: #2c3032;
+  --text: #eef0ee;
+  --muted: #969d9f;
+  --green: #c0ef83;
+  --success: #97dba8;
+  --warning: #edbf72;
+  --danger: #f28c8c;
+  --radius: 14px;
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+* { box-sizing: border-box; }
+body { margin: 0; font-size: 14px; line-height: 1.5; }
+button, input, select { font: inherit; }
+button, a, input, select { -webkit-tap-highlight-color: transparent; }
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+[hidden] { display: none !important; }
+h1, h2, h3, p { margin: 0; }
+h1 { font-size: 34px; font-weight: 600; letter-spacing: -1px; line-height: 1.2; }
+h2 { font-size: 16px; font-weight: 600; }
+h3 { font-size: 18px; }
+small { font-size: 12px; }
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 4px;
 }
 
-body {
-    font-family: var(--font-sans);
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-    /* Horizontal-only safety net: stops any single element from ever
-       creating a sideways scrollbar or clipping content off-screen.
-       This has no effect on vertical scrolling for either page. */
-    overflow-x: hidden;
-}
-
-h1, h2, h3 {
-    font-weight: 600;
-    letter-spacing: -0.01em;
-}
-
-a {
-    color: inherit;
-}
-
-img {
-    max-width: 100%;
-    display: block;
-}
-
-
-/* =====================================================================
-   2. LAYOUT
-   ===================================================================== */
-
-.app {
-    display: flex;
-    min-height: 100vh;
-}
-
-.main {
-    flex: 1;
-    padding: 28px 32px 40px;
-    overflow-x: hidden;
-    max-width: 1200px;
-}
-
-/* Dashboard-specific: lock the layout to the viewport height so a normal
-   desktop screen does not show an unnecessary page scrollbar. This is
-   scoped to body.dashboard-page only - Event History has no such class,
-   so it keeps scrolling normally when there are many events.
-   overflow-y: auto on .main is a safety net so content on an unusually
-   short screen stays reachable (scrolls) instead of being clipped. */
-body.dashboard-page {
-    height: 100vh;
-    overflow: hidden;
-}
-
-body.dashboard-page .app {
-    height: 100vh;
-}
-
-body.dashboard-page .main {
-    height: 100vh;
-    /* The Dashboard's sections are laid out top-to-bottom as a flex
-       column: System Status, the device cards and the page header keep
-       their natural height, and .capture-panel (flex: 1 below) takes
-       whatever vertical space is left over. This is what lets the
-       camera be "as large as the screen allows" without a fixed guess
-       at its size, and without ever exceeding the viewport.
-       overflow-y: auto stays as a safety net - see .capture-panel. */
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    /* Tighter than the default .main padding so the Dashboard's content
-       actually fits inside the viewport instead of relying on the
-       overflow-y scrollbar above to bail it out. Event History uses
-       the default .main padding untouched. */
-    padding: 16px 24px;
-}
-
-/* Dashboard-only spacing tightened just enough for System Status, the
-   4 device cards and Latest Capture to fit one screen. These selectors
-   are scoped to body.dashboard-page so Event History (which shares
-   .page-header/.panel-header) is unaffected. */
-body.dashboard-page .page-header {
-    margin-bottom: 12px;
-}
-
-body.dashboard-page .status-hero {
-    padding: 12px 18px;
-    margin-bottom: 10px;
-}
-
-body.dashboard-page .device-grid {
-    margin-bottom: 10px;
-}
-
-body.dashboard-page .device-card {
-    padding: 10px 14px;
-}
-
-
-/* =====================================================================
-   3. SIDEBAR
-   ===================================================================== */
+.skip-link { position: absolute; top: -80px; left: 20px; z-index: 10; background: var(--green); color: #101213; padding: 12px; }
+.skip-link:focus { top: 12px; }
+.app { display: flex; min-height: 100vh; }
 
 .sidebar {
-    width: 240px;
-    flex-shrink: 0;
-    background: var(--bg-elevated);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    padding: 24px 16px;
+  width: 244px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  background: #151718;
+  padding: 35px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
 }
 
-.brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 4px 8px 28px;
-}
-
-.brand-mark {
-    width: 40px;
-    height: 40px;
-    flex-shrink: 0;
-    border-radius: var(--radius-sm);
-    background: var(--accent-bg);
-    color: var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-}
-
-.brand-text {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.35;
-}
-
-.brand-line {
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    color: var(--text-secondary);
-}
-
-.brand-line-accent {
-    color: var(--text);
-    font-size: 14px;
-}
-
-/* NAVIGATION */
-
-.nav {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
+.brand { display: flex; align-items: center; gap: 11px; font-size: 17px; font-weight: 700; letter-spacing: 2px; padding: 0 10px 40px; }
+.brand-mark { color: var(--green); font-size: 40px; line-height: 1; }
+.brand-sub { display: block; font-size: 9px; font-weight: 500; letter-spacing: 2.5px; color: var(--muted); margin-top: 2px; }
+.nav-label { font-size: 10px; letter-spacing: 1.6px; color: #7f898b; margin: 0 15px 16px; }
+.sidebar nav { display: grid; gap: 6px; }
 
 .nav-link {
-    text-decoration: none;
-    color: var(--text-secondary);
-    padding: 11px 14px;
-    border-radius: var(--radius-sm);
-    font-size: 14px;
-    font-weight: 500;
-    transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.nav-link:hover {
-    background: var(--bg-elevated-hover);
-    color: var(--text);
-}
-
-.nav-link.active {
-    background: var(--accent-bg);
-    color: var(--accent);
-}
-
-.nav-link:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-}
-
-/* SIDEBAR FOOTER - SIMULATION MODE INDICATOR */
-
-.sidebar-footer {
-    margin-top: auto;
-    padding: 14px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-}
-
-.sidebar-footer strong {
-    display: block;
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    color: var(--warning);
-}
-
-.sidebar-footer small {
-    display: block;
-    font-size: 11px;
-    color: var(--text-tertiary);
-    margin-top: 2px;
-}
-
-.mode-dot {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: var(--warning);
-    box-shadow: 0 0 0 3px var(--warning-bg);
-    margin-top: 3px;
-    flex-shrink: 0;
-}
-
-
-/* =====================================================================
-   4. HEADER
-   ===================================================================== */
-
-.page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-    margin-bottom: 22px;
-}
-
-.page-header h1 {
-    font-size: 24px;
-}
-
-.page-header p {
-    color: var(--text-secondary);
-    margin-top: 4px;
-    font-size: 13px;
-}
-
-
-/* =====================================================================
-   5. BUTTONS
-   ===================================================================== */
-
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    border-radius: var(--radius-sm);
-    padding: 11px 20px;
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: background-color 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
-    white-space: nowrap;
-}
-
-.btn:active {
-    transform: translateY(1px);
-}
-
-.btn:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-}
-
-.btn-primary {
-    background: var(--accent);
-    color: white;
-    box-shadow: var(--shadow-sm);
-}
-
-.btn-primary:hover:not(:disabled) {
-    background: #4a9dff;
-}
-
-.btn-primary:disabled {
-    background: var(--neutral-bg);
-    color: var(--text-tertiary);
-    cursor: not-allowed;
-}
-
-.btn-secondary {
-    background: var(--bg-elevated-hover);
-    color: var(--text);
-    border: 1px solid var(--border);
-}
-
-.btn-secondary:hover:not(:disabled) {
-    background: var(--border);
-}
-
-
-/* =====================================================================
-   6. STATUS (system status hero + device cards)
-   ===================================================================== */
-
-.status-dot {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    display: inline-block;
-    flex-shrink: 0;
-}
-
-.status-dot.success { background: var(--success); box-shadow: 0 0 0 3px var(--success-bg); }
-.status-dot.warning { background: var(--warning); box-shadow: 0 0 0 3px var(--warning-bg); }
-.status-dot.danger  { background: var(--danger);  box-shadow: 0 0 0 3px var(--danger-bg); }
-.status-dot.info    { background: var(--accent);  box-shadow: 0 0 0 3px var(--accent-bg); }
-.status-dot.neutral { background: var(--neutral); box-shadow: 0 0 0 3px var(--neutral-bg); }
-
-/* SYSTEM STATUS HERO CARD */
-
-.status-hero {
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 22px 24px;
-    margin-bottom: 20px;
-    transition: background-color 0.25s ease, border-color 0.25s ease;
-}
-
-.status-hero-label {
-    display: block;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-    margin-bottom: 10px;
-}
-
-.status-hero-value {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-}
-
-.status-hero-hint {
-    margin-top: 8px;
-    font-size: 13px;
-    color: var(--text-secondary);
-}
-
-/* State-specific tinting for the hero card */
-
-.status-hero.state-monitoring { border-color: var(--border); }
-
-.status-hero.state-motion {
-    border-color: var(--warning);
-    background: var(--warning-bg);
-}
-
-.status-hero.state-capturing {
-    border-color: var(--accent);
-    background: var(--accent-bg);
-}
-
-.status-hero.state-saved {
-    border-color: var(--success);
-    background: var(--success-bg);
-}
-
-.status-hero.state-alarm {
-    border-color: var(--danger);
-    background: var(--danger-bg);
-    animation: alarm-pulse 1.6s ease-in-out infinite;
-}
-
-@keyframes alarm-pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(240, 85, 95, 0.35); }
-    50%      { box-shadow: 0 0 0 8px rgba(240, 85, 95, 0); }
-}
-
-/* DEVICE STATUS CARDS (PIR / Camera / LED / Buzzer) */
-
-.device-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 20px;
-}
-
-.device-card {
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 16px 18px;
-}
-
-.device-name {
-    display: block;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-    margin-bottom: 12px;
-}
-
-.device-value {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    font-size: 15px;
-    font-weight: 600;
-}
-
-
-/* =====================================================================
-   7. CARDS & PANELS
-   ===================================================================== */
-
-.panel {
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    overflow: hidden;
-}
-
-.panel-header {
-    padding: 16px 18px;
-    border-bottom: 1px solid var(--border);
-}
-
-.panel-header h2 {
-    font-size: 14px;
-}
-
-.panel-header span {
-    display: block;
-    color: var(--text-tertiary);
-    font-size: 11px;
-    margin-top: 3px;
-}
-
-
-/* =====================================================================
-   8. STATISTICS
-   ===================================================================== */
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-}
-
-.stat-card {
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 18px 20px;
-}
-
-.stat-label {
-    display: block;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
-}
-
-.stat-card strong {
-    font-size: 22px;
-    font-weight: 700;
-}
-
-
-/* =====================================================================
-   9. CAPTURE
-   ===================================================================== */
-
-/* Latest Capture is a single bordered card (.panel) split into a
-   two-column layout: event details + statistics on the left, one large
-   camera image on the right. It is the last section in the Dashboard's
-   flex column, so it grows to fill whatever vertical space the header,
-   System Status and device cards did not use - see body.dashboard-page
-   .main above. min-height keeps it from collapsing away entirely on an
-   unrealistically short window; .main's overflow-y: auto is the
-   fallback if that minimum still doesn't fit. */
-.capture-panel {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 260px;
-}
-
-/* CSS Grid with named areas so the same three blocks (event details,
-   statistics, camera) can be rearranged for small screens - see the
-   responsive rules below - without touching the HTML or JS. */
-.capture-columns {
-    flex: 1;
-    min-height: 0;
-    display: grid;
-    grid-template-columns: minmax(260px, 320px) 1fr;
-    grid-template-rows: auto 1fr;
-    grid-template-areas:
-        "info   camera"
-        "stats  camera";
-}
-
-/* LEFT (top): event details */
-.capture-details {
-    grid-area: info;
-    padding: 16px 18px 10px;
-    border-right: 1px solid var(--border);
-}
-
-.capture-heading h2 {
-    font-size: 14px;
-}
-
-.capture-heading span {
-    display: block;
-    color: var(--text-tertiary);
-    font-size: 11px;
-    margin-top: 3px;
-}
-
-.capture-info {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 12px;
-}
-
-.event-id {
-    font-size: 14px;
-    font-weight: 700;
-}
-
-.capture-time {
-    font-size: 13px;
-    color: var(--text-secondary);
-}
-
-.capture-badges {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 2px;
-}
-
-.capture-view-btn {
-    align-self: flex-start;
-    padding: 8px 14px;
-    font-size: 11px;
-    margin-top: 4px;
-}
-
-/* Badges shared between the capture panel and the history table */
-
-.badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-}
-
-.badge-motion {
-    background: var(--accent-bg);
-    color: var(--accent);
-}
-
-.badge-alarm {
-    background: var(--danger-bg);
-    color: var(--danger);
-}
-
-/* LEFT (bottom): statistics - Total Events / Today's Events / Last
-   Detection, stacked as a compact divided list rather than the wider
-   3-across cards used elsewhere, since this column is narrow. */
-.info-stats {
-    grid-area: stats;
-    padding: 8px 18px 14px;
-    border-right: 1px solid var(--border);
-    border-top: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-}
-
-.info-stat-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border);
-}
-
-.info-stat-row:last-child {
-    border-bottom: none;
-}
-
-.info-stat-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-}
-
-.info-stat-value {
-    font-size: 15px;
-    font-weight: 700;
-}
-
-/* RIGHT: the large camera image. .capture-image-column stretches its
-   only child (.capture-image-wrap) to fill the full grid-cell height
-   via the default flex "stretch" behavior, and flex: 1 below fills the
-   remaining width - so the image's size comes from genuinely available
-   space, not a guessed vh/px number. max-height is just a sensible cap
-   for unusually tall monitors. */
-.capture-image-column {
-    grid-area: camera;
-    display: flex;
-    padding: 14px;
-    min-height: 0;
-    min-width: 0;
-}
-
-.capture-image-wrap {
-    position: relative;
-    flex: 1;
-    min-width: 0;
-    max-height: 560px;
-    background: #070a0e;
-    border-radius: var(--radius-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-
-.capture-image {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    animation: fade-in 0.3s ease;
-}
-
-@keyframes fade-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-}
-
-.capture-placeholder {
-    color: var(--text-tertiary);
-    font-size: 13px;
-    text-align: center;
-    padding: 0 20px;
-}
-
-
-/* =====================================================================
-   10. TABLES
-   ===================================================================== */
-
-.table-panel {
-    min-height: 200px;
-}
-
-.table-scroll {
-    overflow-x: auto;
-}
-
-/* table-layout: fixed means column widths come ONLY from the <colgroup>
-   widths below - never from cell content. This is what keeps the header
-   and every row (regardless of a long timestamp, a badge, or a missing
-   image) locked to the exact same column structure. min-width stops the
-   columns from being squeezed unreadably thin on a narrow screen -
-   .table-scroll's overflow-x: auto lets the user scroll sideways to it
-   instead. */
-.data-table {
-    width: 100%;
-    min-width: 720px;
-    table-layout: fixed;
-    border-collapse: collapse;
-}
-
-.col-id       { width: 12%; }
-.col-datetime { width: 30%; }
-.col-event    { width: 20%; }
-.col-image    { width: 18%; }
-.col-alarm    { width: 20%; }
-
-.data-table th {
-    text-align: left;
-    padding: 13px 18px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    color: var(--text-secondary);
-    border-bottom: 1px solid var(--border);
-    text-transform: uppercase;
-    white-space: nowrap;
-}
-
-.data-table td {
-    padding: 14px 18px;
-    font-size: 13px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text);
-    vertical-align: middle;
-}
-
-/* Event ID and Date & Time hold plain text of predictable length - keep
-   them on one line (never wrap) and trim gracefully with an ellipsis in
-   the rare case a column becomes too narrow, so every row keeps the
-   same height. Event/Image/Alarm hold a badge or thumbnail rather than
-   free text, so they don't need this and keep normal overflow (which
-   also lets the thumbnail's hover zoom show without being clipped). */
-.data-table td:nth-child(1),
-.data-table td:nth-child(2) {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Image and Alarm are centered in their column; Event ID, Date & Time
-   and Event stay left-aligned under their headers (the default). */
-.data-table th:nth-child(4),
-.data-table td:nth-child(4),
-.data-table th:nth-child(5),
-.data-table td:nth-child(5) {
-    text-align: center;
-}
-
-.data-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-.data-table tbody tr:hover {
-    background: var(--bg-elevated-hover);
-}
-
-.table-message {
-    text-align: center;
-    white-space: normal;
-    padding: 36px !important;
-    color: var(--text-secondary) !important;
-}
-
-.history-image {
-    width: 90px;
-    height: 56px;
-    object-fit: cover;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border);
-    cursor: pointer;
-    transition: transform 0.15s ease;
-}
-
-.history-image:hover {
-    transform: scale(1.05);
-}
-
-/* Same height as .history-image so a row without a captured photo is
-   not shorter than one with a thumbnail - every row stays the same
-   height either way. */
-.no-image {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 56px;
-    color: var(--text-tertiary);
-    font-size: 11px;
-}
-
-
-/* =====================================================================
-   11. EMPTY STATES
-   ===================================================================== */
-
-.empty-state {
-    text-align: center;
-    padding: 56px 24px;
-}
-
-.empty-state h3 {
-    font-size: 16px;
-}
-
-.empty-state p {
-    color: var(--text-secondary);
-    font-size: 13px;
-    margin-top: 6px;
-    margin-bottom: 20px;
-}
-
-
-/* =====================================================================
-   12. IMAGE MODAL
-   ===================================================================== */
-
-.image-modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.85);
-    align-items: center;
-    justify-content: center;
-    padding: 30px;
-}
-
-.image-modal.show {
-    display: flex;
-}
-
-.modal-content {
-    position: relative;
-    max-width: 1000px;
-    width: 100%;
-    max-height: 90vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#modal-image {
-    max-width: 100%;
-    max-height: 85vh;
-    object-fit: contain;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border);
-}
-
-.modal-close {
-    position: absolute;
-    top: -15px;
-    right: -15px;
-    width: 36px;
-    height: 36px;
-    border: none;
-    border-radius: 50%;
-    background: var(--danger);
-    color: white;
-    font-size: 22px;
-    line-height: 1;
-    cursor: pointer;
-    z-index: 1001;
-}
-
-.modal-close:hover {
-    opacity: 0.85;
-}
-
-.modal-close:focus-visible {
-    outline: 2px solid white;
-    outline-offset: 2px;
-}
-
-
-/* =====================================================================
-   13. RESPONSIVE DESIGN
-   ===================================================================== */
-
-@media (max-width: 1050px) {
-    .device-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .stats-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-
-    /* Stack the Dashboard's Latest Capture layout: event details, then
-       the camera, then statistics - matching the order requested for
-       smaller screens. Named grid areas make this a pure CSS reorder;
-       the HTML/JS do not need to change. */
-    .capture-columns {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto auto;
-        grid-template-areas:
-            "info"
-            "camera"
-            "stats";
-    }
-
-    .capture-details {
-        border-right: none;
-        border-bottom: 1px solid var(--border);
-    }
-
-    .info-stats {
-        border-right: none;
-    }
-
-    .capture-image-column {
-        padding: 14px;
-    }
-
-    .capture-image-wrap {
-        /* No longer stretching to fill a grid row here - give it its
-           own explicit, still-generous height for the stacked layout. */
-        flex: none;
-        width: 100%;
-        height: 340px;
-        max-height: none;
-    }
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 12px 13px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: #a5adae;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.nav-link > span { font-size: 20px; width: 22px; text-align: center; line-height: 1; }
+.nav-link:hover { color: var(--text); background: #212526; }
+.nav-link.active { background: #293126; color: var(--green); border-color: #39452f; }
+
+.sidebar-note { margin-top: auto; border: 1px solid var(--border); background: #1d2020; padding: 15px; border-radius: 10px; font-size: 12px; }
+.sidebar-note .status-dot { margin-right: 6px; }
+.sidebar-note p { font-size: 11px; color: var(--muted); margin-top: 7px; }
+.sidebar-bottom { margin-top: 24px; padding: 20px 5px 0; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 11px; font-size: 12px; }
+.sidebar-bottom small { display: block; color: var(--muted); font-size: 10px; margin-top: 3px; }
+.avatar { display: grid; place-items: center; height: 34px; width: 34px; background: #333c2c; border-radius: 50%; color: var(--green); font-size: 11px; }
+
+.main { flex: 1; min-width: 0; }
+.topbar { height: 72px; padding: 0 38px; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--border); font-size: 12px; color: var(--muted); }
+.breadcrumb { color: var(--text); margin-left: 14px; }
+.connection { display: flex; align-items: center; gap: 9px; font-size: 11px; }
+.content { max-width: 1600px; margin: auto; padding: 32px 38px 18px; }
+.page-header { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 28px; scroll-margin-top: 25px; }
+.eyebrow { color: var(--muted); font-size: 10px; letter-spacing: 2px; margin-bottom: 9px; }
+.heading-dot { color: var(--green); }
+.page-header p { color: var(--muted); margin-top: 9px; font-size: 13px; }
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border: 1px solid #3b4142;
+  background: #232728;
+  color: var(--text);
+  border-radius: 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.button:hover { background: #303535; border-color: #566052; }
+.button.primary { background: var(--green); color: #182112; border-color: var(--green); font-weight: 600; }
+.button.primary:hover { background: #d0f69f; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 22px; }
+.stat-card { background: linear-gradient(110deg, #1d2122, #191c1d); border: 1px solid var(--border); border-radius: var(--radius); padding: 21px 20px; min-height: 140px; }
+.stat-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 12px; margin-bottom: 15px; }
+.stat-top > span { color: #a6b1a1; font-size: 18px; }
+.stat-card strong { display: block; font-weight: 500; font-size: 27px; letter-spacing: -.7px; line-height: 1.2; overflow-wrap: anywhere; }
+.stat-card small { display: block; margin-top: 10px; color: #7f898b; font-size: 11px; }
+
+.system-status { display: flex; align-items: center; gap: 10px; font-size: 12px; padding: 12px 16px; border: 1px solid #334233; background: #19201a; border-radius: 9px; margin-bottom: 22px; }
+.system-status strong { font-weight: 600; }
+.system-status > span:last-child { margin-left: auto; color: var(--muted); font-size: 11px; }
+.system-status.warning { border-color: #5d4b2e; background: #242017; }
+.system-status.danger { border-color: #6c3e3e; background: #2c1c1c; }
+
+.status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.status-dot.success { background: var(--success); box-shadow: 0 0 0 3px #97dba810; }
+.status-dot.warning { background: var(--warning); }
+.status-dot.danger { background: var(--danger); }
+.status-dot.neutral { background: #727d7b; }
+
+.monitor-grid { display: grid; grid-template-columns: minmax(0, 1.9fr) minmax(270px, 1fr); gap: 20px; }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 22px; scroll-margin-top: 24px; min-width: 0; }
+.panel-header { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 20px 22px; border-bottom: 1px solid var(--border); }
+.panel-header p { color: var(--muted); font-size: 11px; margin-top: 4px; }
+
+.tag { display: inline-flex; padding: 4px 9px; background: #252c29; color: #a9b9b0; border: 1px solid #35423c; border-radius: 6px; font-size: 10px; white-space: nowrap; letter-spacing: .3px; }
+.tag.amber { background: #2c261c; border-color: #4c402a; color: var(--warning); }
+.tag.neutral { background: #242729; border-color: #3b4142; color: #aeb6b7; }
+
+.camera-stage { position: relative; margin: 16px 16px 0; background: #0d0f10; aspect-ratio: 16 / 9; border: 1px solid #2a2e2e; border-radius: 9px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.camera-stage > img { width: 100%; height: 100%; object-fit: contain; }
+.capture-placeholder { text-align: center; padding: 22px; color: var(--muted); }
+.capture-placeholder > span { font-size: 40px; color: #58615b; display: block; margin-bottom: 8px; }
+.capture-placeholder h3 { color: #bec6c0; font-size: 15px; font-weight: 500; }
+.capture-placeholder p { font-size: 11px; margin-top: 6px; max-width: 280px; }
+
+.camera-overlay { position: absolute; bottom: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; background: linear-gradient(transparent, #080b0bd9); padding: 25px 16px 12px; color: #d2d8d3; font-size: 10px; letter-spacing: 1px; }
+.overlay-divider { color: #636d65; margin: 0 7px; }
+.icon-button { background: #252b28b3; color: var(--text); border: 1px solid #4a534c; border-radius: 6px; width: 32px; height: 30px; font-size: 20px; display: grid; place-items: center; }
+.capture-footer { padding: 14px 20px 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 10px; color: #a6b1a8; }
+.capture-footer > div { display: flex; align-items: center; gap: 8px; }
+.capture-footer > span { color: var(--muted); font-variant-numeric: tabular-nums; }
+.panel-note { font-size: 11px; color: var(--muted); padding: 14px 22px 18px; }
+.small-label { font-size: 9px; letter-spacing: 1px; color: var(--muted); }
+
+.device-list { padding: 4px 20px; }
+.device-row { display: flex; align-items: center; gap: 12px; padding: 19px 0; border-bottom: 1px solid var(--border); }
+.device-row:last-child { border-bottom: 0; }
+.device-icon { display: grid; place-items: center; width: 35px; height: 35px; border: 1px solid #39403b; background: #252a27; border-radius: 9px; color: #b0bfae; font-size: 20px; flex-shrink: 0; }
+.device-row strong { font-size: 12px; font-weight: 500; }
+.device-row small { display: block; font-size: 10px; color: var(--muted); margin-top: 3px; }
+.device-state { margin-left: auto; font-size: 10px; text-align: right; max-width: 95px; }
+
+.success { color: var(--success); }
+.warning { color: var(--warning); }
+.danger { color: var(--danger); }
+.neutral { color: var(--muted); }
+
+.device-footnote { padding: 14px 20px; border-top: 1px solid var(--border); color: var(--muted); font-size: 10px; }
+.text-link { font-size: 11px; color: var(--green); white-space: nowrap; }
+.text-link:hover { text-decoration: underline; }
+.count-badge { font-size: 10px; color: var(--muted); background: #2b3030; border-radius: 5px; padding: 3px 7px; margin-left: 6px; vertical-align: middle; }
+
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 670px; text-align: left; font-size: 12px; }
+th { font-size: 10px; font-weight: 500; color: var(--muted); letter-spacing: .5px; background: #1c2021; }
+th, td { padding: 13px 22px; border-bottom: 1px solid #2a2e2f; }
+td:nth-child(2) { font-variant-numeric: tabular-nums; color: #aeb7b5; font-size: 11px; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:hover { background: #202526; }
+.table-message { text-align: center !important; color: var(--muted); padding: 35px !important; }
+
+.thumbnail-button { padding: 0; background: #141818; border: 1px solid #465149; border-radius: 5px; display: inline-flex; overflow: hidden; color: var(--muted); font-size: 10px; min-width: 72px; min-height: 44px; align-items: center; justify-content: center; }
+.thumbnail-button img { object-fit: cover; display: block; }
+.thumbnail-button:hover { border-color: var(--green); }
+
+.analytics-summary { padding: 22px 22px 0; display: flex; align-items: baseline; gap: 10px; }
+.analytics-summary strong { font-size: 30px; font-weight: 500; }
+.analytics-summary span { font-size: 12px; color: var(--muted); }
+.daily-chart { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 20px; padding: 10px 32px 0; }
+.chart-column { text-align: center; min-width: 0; }
+.chart-column strong { font-size: 11px; color: #b8c3b9; font-weight: 500; }
+.chart-track { height: 100px; position: relative; margin-top: 8px; border-bottom: 1px solid var(--border); background: linear-gradient(transparent 49%, #2b322c60 50%, transparent 51%); }
+.chart-bar { position: absolute; bottom: 0; width: 50%; left: 25%; background: linear-gradient(#bbec82, #5b7b44); border-radius: 4px 4px 0 0; }
+.chart-column > span { display: block; color: #b9c2bd; font-size: 11px; margin-top: 10px; }
+.chart-column small { color: #79857d; font-size: 9px; }
+
+.settings-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin: 0; padding: 22px; }
+.settings-grid dt { font-size: 11px; color: var(--muted); margin-bottom: 7px; }
+.settings-grid dd { margin: 0; font-size: 12px; overflow-wrap: anywhere; }
+.history-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.stat-card .date-stat { font-size: 18px; line-height: 1.8; }
+
+.filters { display: flex; align-items: end; gap: 14px; padding: 20px 22px; flex-wrap: wrap; }
+.filters label { display: grid; gap: 7px; color: var(--muted); font-size: 11px; }
+.search-field { flex: 1; min-width: 200px; }
+.filters input, .filters select { background: #121617; color: var(--text); border: 1px solid #3b4440; border-radius: 7px; padding: 10px 12px; min-height: 40px; max-width: 100%; }
+.filters input::placeholder { color: #748078; }
+.results-label { padding: 0 22px 15px; font-size: 11px; color: var(--muted); }
+.pagination { display: flex; justify-content: space-between; align-items: center; padding: 15px 22px; border-top: 1px solid var(--border); font-size: 11px; color: var(--muted); }
+.notice { background: #2d1d1c; border: 1px solid #69413a; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 12px; }
+
+footer { display: flex; justify-content: space-between; gap: 20px; font-size: 9px; letter-spacing: 1px; color: #737e79; padding: 16px 0; }
+footer span { letter-spacing: 0; }
+
+dialog { background: #171c19; color: var(--text); border: 1px solid #44503f; border-radius: 12px; padding: 16px; width: min(1050px, 92vw); max-height: 92vh; }
+dialog::backdrop { background: #050908d9; }
+.dialog-header { display: flex; align-items: center; justify-content: space-between; font-size: 12px; margin-bottom: 12px; }
+#modal-image { display: block; max-width: 100%; max-height: 78vh; margin: auto; object-fit: contain; }
+
+@media (min-width: 1600px) {
+  .content { padding-top: 42px; }
+  .camera-stage { max-height: 480px; }
+}
+
+@media (max-width: 1200px) {
+  .sidebar { width: 215px; padding-left: 14px; padding-right: 14px; }
+  .content { padding: 26px; }
+  .topbar { padding: 0 26px; }
+  .stats-grid { gap: 12px; }
+  .stat-card { padding: 18px 15px; }
+  .stat-card strong { font-size: 23px; }
+  .monitor-grid { grid-template-columns: minmax(0, 1.5fr) minmax(260px, 1fr); }
+  .settings-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 980px) {
+  .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .monitor-grid { grid-template-columns: 1fr; }
+  .device-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 22px; }
+  .device-row:nth-child(3) { border-bottom: 0; }
+  .system-status { flex-wrap: wrap; }
+  .system-status > span:last-child { flex-basis: 100%; margin-left: 17px; }
+  .history-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .date-stat { font-size: 14px !important; }
 }
 
 @media (max-width: 760px) {
-    /* On phones/tablets, let the Dashboard scroll normally like any
-       other page instead of being locked to the viewport height. */
-    body.dashboard-page {
-        height: auto;
-        overflow: visible;
-    }
-
-    body.dashboard-page .app {
-        height: auto;
-    }
-
-    body.dashboard-page .main {
-        height: auto;
-        overflow-y: visible;
-    }
-
-    .sidebar {
-        width: 100%;
-        flex-direction: row;
-        align-items: center;
-        padding: 14px 16px;
-        border-right: none;
-        border-bottom: 1px solid var(--border);
-        flex-wrap: wrap;
-        gap: 12px;
-    }
-
-    .app {
-        flex-direction: column;
-    }
-
-    .brand {
-        padding: 0;
-    }
-
-    .nav {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-        margin-left: auto;
-        min-width: 0;
-    }
-
-    .sidebar-footer {
-        display: none;
-    }
-
-    .main {
-        padding: 18px;
-        max-width: none;
-    }
-
-    .page-header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 14px;
-    }
-
-    .page-header .btn {
-        width: 100%;
-    }
-
-    .device-grid,
-    .stats-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .status-hero-value {
-        font-size: 21px;
-    }
-
-    .capture-image-wrap {
-        height: 220px;
-    }
+  .app { display: block; }
+  .sidebar { position: relative; width: 100%; height: auto; padding: 18px; border-right: 0; border-bottom: 1px solid var(--border); }
+  .brand { padding: 0 0 16px; }
+  .nav-label, .sidebar-note, .sidebar-bottom { display: none; }
+  .sidebar nav { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .nav-link { white-space: normal; font-size: 11px; gap: 6px; padding: 9px 7px; }
+  .nav-link > span { font-size: 17px; width: 17px; flex-shrink: 0; }
+  .topbar { height: 55px; padding: 0 20px; font-size: 10px; }
+  .connection { font-size: 10px; }
+  .content { padding: 24px 18px 14px; }
+  h1 { font-size: 29px; }
+  .page-header { align-items: flex-start; }
+  .page-header p { font-size: 12px; }
+  .page-header .button { font-size: 11px; padding: 10px; }
+  .panel-header { padding: 16px; }
+  .panel-header h2 { font-size: 14px; }
+  .panel-header p { font-size: 10px; }
+  .capture-footer { flex-wrap: wrap; padding: 12px 16px 0; }
+  .panel-note { padding: 12px 16px 16px; }
+  .device-footnote { font-size: 11px; }
+  .daily-chart { padding: 10px 18px 0; gap: 10px; }
+  .settings-grid { padding: 18px; gap: 20px; }
+  .history-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .history-stats .stat-card:last-child { grid-column: 1 / -1; }
+  .filters { padding: 18px; }
+  .filters label { flex: 1; min-width: 135px; }
+  .filters .search-field { flex-basis: 100%; }
+  .filters .button { width: 100%; }
+  footer { flex-direction: column; gap: 7px; }
+  .pagination { padding: 15px; }
+  .text-link { font-size: 10px; }
 }
 
-@media (max-width: 480px) {
-    .device-grid,
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .nav {
-        gap: 4px;
-    }
-
-    .nav-link {
-        padding: 8px 10px;
-        font-size: 13px;
-    }
+@media (max-width: 430px) {
+  .page-header { flex-wrap: wrap; gap: 16px; }
+  .stats-grid { gap: 10px; }
+  .stat-card { padding: 16px 12px; min-height: 130px; }
+  .stat-top { font-size: 10px; }
+  .stat-card strong { font-size: 21px; }
+  .stat-card small { font-size: 10px; }
+  .device-list { grid-template-columns: 1fr; }
+  .device-row:nth-child(3) { border-bottom: 1px solid var(--border); }
+  .device-state { max-width: 120px; }
+  .panel-header { flex-wrap: wrap; }
+  .system-status { font-size: 11px; }
+  .topbar { gap: 8px; }
+  .breadcrumb { margin-left: 5px; }
+  .settings-grid { grid-template-columns: 1fr; }
+  .camera-overlay { font-size: 9px; }
+  .chart-column > span { font-size: 10px; }
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  .button, .nav-link, .thumbnail-button {
+    transition: background .15s, border-color .15s;
+  }
+}
+
+.icon-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+.nav-icon { width: 18px; height: 18px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }

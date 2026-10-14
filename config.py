@@ -1,16 +1,15 @@
-# Set to False when running on a Raspberry Pi with real hardware connected
-SIMULATION_MODE = False 
+# False enables Raspberry Pi hardware mode.
+SIMULATION_MODE = True
 
 DATABASE = "surveillance.db"
 CAPTURE_FOLDER = "static/captures"
 
-# GPIO Pin Configuration (BCM numbering, matching your script.py)
+# BCM GPIO numbering.
 PIR_PIN = 4
 LED_PIN = 17
 BUZZER_PIN = 27
 
-# Timing for the detection sequence (in seconds)
-MOTION_DELAY = 1.0        # PIR sensor "sees" motion
-CAPTURE_DELAY = 1.0       # Camera pretends to take a photo
-ALARM_DURATION = 3.0      # LED + buzzer stay on
-SAVED_DISPLAY_TIME = 1.0  # "Event Saved" is shown before returning to Monitoring
+MOTION_DELAY = 1.0
+CAPTURE_DELAY = 1.0
+ALARM_DURATION = 3.0
+SAVED_DISPLAY_TIME = 1.0

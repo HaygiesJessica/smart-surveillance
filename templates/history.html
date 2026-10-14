@@ -1,173 +1,243 @@
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "base.html" %}
 
-    <title>Event History | Smart Home Surveillance</title>
+{% block title %}Event History{% endblock %}
+{% block page %}history{% endblock %}
+{% block crumb %}Event History{% endblock %}
 
-    <!-- ?v=2 is a manual cache-buster: bump it whenever style.css changes,
-         so a normal page refresh is guaranteed to pick up the new file
-         instead of an old copy the browser (or its back/forward cache)
-         may have kept from an earlier visit to this page. -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2">
-</head>
+{% block scripts %}
+<script
+    defer
+    src="{{ url_for('static', filename='js/history.js') }}">
+</script>
+{% endblock %}
 
-<body>
+{% block content %}
 
-    <div class="app">
+<!-- PAGE HEADER -->
+<header class="page-header">
+    <div>
+        <div class="eyebrow">SECURITY ARCHIVE</div>
 
-        <!-- SIDEBAR -->
-        <aside class="sidebar">
+        <h1>
+            Event History<span class="heading-dot">.</span>
+        </h1>
 
-            <div class="brand">
-                <div class="brand-mark">&#9673;</div>
-
-                <div class="brand-text">
-                    <span class="brand-line">SMART HOME</span>
-                    <span class="brand-line brand-line-accent">SURVEILLANCE</span>
-                </div>
-            </div>
-
-            <nav class="nav">
-                <a href="/" class="nav-link">Dashboard</a>
-                <a href="/history" class="nav-link active">Event History</a>
-            </nav>
-
-            <div class="sidebar-footer">
-                <span class="mode-dot" aria-hidden="true"></span>
-
-                <div>
-                    <strong>SIMULATION MODE</strong>
-                    <small>No Hardware Connected</small>
-                </div>
-            </div>
-
-        </aside>
-
-
-        <!-- MAIN CONTENT -->
-        <main class="main">
-
-            <header class="page-header">
-                <div>
-                    <h1>Event History</h1>
-                    <p>Surveillance events recorded by the system.</p>
-                </div>
-            </header>
-
-
-            <!-- STATISTICS -->
-            <section class="stats-grid">
-
-                <div class="stat-card">
-                    <span class="stat-label">Total Events</span>
-                    <strong id="total-events">0</strong>
-                </div>
-
-                <div class="stat-card">
-                    <span class="stat-label">Today's Events</span>
-                    <strong id="today-events">0</strong>
-                </div>
-
-                <div class="stat-card">
-                    <span class="stat-label">Last Detection</span>
-                    <strong id="last-detection-time">&mdash;</strong>
-                </div>
-
-            </section>
-
-
-            <!-- EVENT TABLE -->
-            <section class="panel table-panel">
-
-                <div class="panel-header">
-                    <h2>Recorded Events</h2>
-                    <span>All detections saved by the system</span>
-                </div>
-
-                <div class="table-scroll" id="table-scroll">
-
-                    <table class="data-table">
-
-                        <!-- table-layout: fixed (in the CSS) makes column widths come
-                             ONLY from this colgroup, so the header row and every data
-                             row always share the exact same column structure - widths
-                             no longer shift based on each row's content. -->
-                        <colgroup>
-                            <col class="col-id">
-                            <col class="col-datetime">
-                            <col class="col-event">
-                            <col class="col-image">
-                            <col class="col-alarm">
-                        </colgroup>
-
-                        <thead>
-                            <tr>
-                                <th>Event ID</th>
-                                <th>Date &amp; Time</th>
-                                <th>Event</th>
-                                <th>Image</th>
-                                <th>Alarm</th>
-                            </tr>
-                        </thead>
-
-                        <tbody id="history-body">
-                            <tr>
-                                <td colspan="5" class="table-message">Loading events...</td>
-                            </tr>
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-                <!-- EMPTY STATE -->
-                <div class="empty-state" id="empty-state" hidden>
-                    <h3>No surveillance events yet</h3>
-                    <p>The system has not detected any motion.</p>
-
-                    <button
-                        class="btn btn-primary"
-                        id="empty-simulate-btn"
-                        onclick="simulateMotionFromHistory()">
-                        Simulate Motion
-                    </button>
-                </div>
-
-            </section>
-
-        </main>
-
+        <p>
+            Review recorded motion detections,
+            alarm activity, and surveillance captures.
+        </p>
     </div>
 
+    <a
+        class="button"
+        href="{{ url_for('dashboard') }}">
+        ← Back to Dashboard
+    </a>
+</header>
 
-    <!-- IMAGE PREVIEW MODAL -->
-    <div
-        id="image-modal"
-        class="image-modal"
-        onclick="closeImagePreview()">
 
-        <div
-            class="modal-content"
-            onclick="event.stopPropagation()">
+<!-- EVENT STATISTICS -->
+<section class="stats-grid history-stats">
 
-            <button
-                class="modal-close"
-                onclick="closeImagePreview()"
-                aria-label="Close image preview">
-                &times;
-            </button>
-
-            <img id="modal-image" alt="Enlarged detection capture">
-
+    <!-- TOTAL EVENTS -->
+    <article class="stat-card">
+        <div class="stat-top">
+            Total Recorded Events
         </div>
 
+        <strong id="total-events">—</strong>
+
+        <small>
+            Stored in the local database
+        </small>
+    </article>
+
+
+    <!-- TODAY'S EVENTS -->
+    <article class="stat-card">
+        <div class="stat-top">
+            Incidents Today
+        </div>
+
+        <strong id="today-events">—</strong>
+
+        <small>
+            Recorded motion events today
+        </small>
+    </article>
+
+
+    <!-- LATEST DETECTION -->
+    <article class="stat-card">
+        <div class="stat-top">
+            Latest Detection
+        </div>
+
+        <strong
+            class="date-stat"
+            id="last-detection">
+            —
+        </strong>
+
+        <small>
+            Monitoring server time
+        </small>
+    </article>
+
+</section>
+
+
+<!-- EVENT HISTORY PANEL -->
+<section class="panel history-panel">
+
+    <!-- PANEL HEADER -->
+    <div class="panel-header">
+        <div>
+            <h2>Recorded Events</h2>
+
+            <p>
+                Historical motion detections
+                and alarm activity
+            </p>
+        </div>
+
+        <button
+            type="button"
+            class="button"
+            id="refresh-btn">
+            ↻ Refresh
+        </button>
     </div>
 
-    <script src="{{ url_for('static', filename='js/history.js') }}?v=2"></script>
 
-</body>
+    <!-- SEARCH AND FILTERS -->
+    <div class="filters">
 
-</html>
+        <!-- SEARCH -->
+        <label class="search-field">
+            <span>Search Events</span>
+
+            <input
+                type="search"
+                id="event-search"
+                placeholder="Search ID, timestamp, motion or alarm"
+                autocomplete="off">
+        </label>
+
+
+        <!-- DATE FILTER -->
+        <label>
+            <span>Detection Date</span>
+
+            <input
+                type="date"
+                id="event-date">
+        </label>
+
+
+        <!-- ALARM FILTER -->
+        <label>
+            <span>Alarm Status</span>
+
+            <select id="alarm-filter">
+                <option value="">
+                    All Statuses
+                </option>
+            </select>
+        </label>
+
+
+        <!-- CLEAR FILTERS -->
+        <button
+            type="button"
+            class="button"
+            id="clear-filters">
+            Clear Filters
+        </button>
+
+    </div>
+
+
+    <!-- RESULTS COUNTER -->
+    <div
+        class="results-label"
+        id="results-count"
+        role="status"
+        aria-live="polite">
+
+        Loading history…
+
+    </div>
+
+
+    <!-- EVENTS TABLE -->
+    <div class="table-scroll">
+
+        <table class="history-table">
+
+            <thead>
+                <tr>
+                    <th scope="col">Event ID</th>
+                    <th scope="col">Detected At</th>
+                    <th scope="col">Motion Status</th>
+                    <th scope="col">Alarm Status</th>
+                    <th scope="col">Capture</th>
+                </tr>
+            </thead>
+
+            <tbody id="history-body">
+
+                <tr>
+                    <td
+                        colspan="5"
+                        class="table-message">
+
+                        Loading recorded events…
+
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- PAGINATION -->
+    <div class="pagination">
+
+        <button
+            type="button"
+            class="button"
+            id="previous-page"
+            disabled>
+
+            ← Previous
+
+        </button>
+
+        <span
+            id="page-label"
+            aria-live="polite">
+
+            Page 1
+
+        </span>
+
+        <button
+            type="button"
+            class="button"
+            id="next-page"
+            disabled>
+
+            Next →
+
+        </button>
+
+    </div>
+
+</section>
+
+{% endblock %}
